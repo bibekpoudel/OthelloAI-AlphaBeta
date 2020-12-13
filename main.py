@@ -97,9 +97,9 @@ def get_flippable(board, size, player, row, column):
     return toFlip
 
 
+#Flips the flippable pieces
 def flip(board, row, col, player, toBeFlipped):
     board[row][col] = player
-    print(row, col)
     if len(toBeFlipped) > 0:
         for r, c in toBeFlipped:
             board[r][c] = player
@@ -116,6 +116,7 @@ def make_move(board, size, row, column, player):
     flip(board, row, column, player, toBeFlipped)
     return True
 
+#Returns the total score of a player
 def score(board, size, player):
     count = 0
     for i in range(size):
@@ -143,9 +144,11 @@ def get_legal_moves(board,size, player):
                 legal_moves.append((i , j))
     return legal_moves
 
+#checks if the move is valid
 def has_valid_move(board, size, player):
     return len(get_legal_moves(board, size, player)) > 0
 
+#returns true if both players do not have any valid moves to make
 def game_over(board, size, player):
     opponent = WHITE if player == BLACK else BLACK
     if has_valid_move(board, size, player) or has_valid_move(board, size, opponent):
@@ -153,6 +156,7 @@ def game_over(board, size, player):
     else:
         return True
 
+#gets move from the player
 def get_move(board, size, player):
     print player, "'s turn\n"
     row = input("Enter row: ")
@@ -162,19 +166,27 @@ def get_move(board, size, player):
         row = input("Enter row: ")
         col = input("Enter column: ")
     make_move(board, size, row, col, player)
+####################################################################### 
 
+######################### MAIN GAME ####################################
+
+#runs a loop till game is over
 def play_game(board, size, turn=WHITE):
     opponent = BLACK if turn == WHITE else BLACK
     while not game_over(board,size, turn):
-        if has_valid_move(board, size, turn):
-            get_move(board, size, turn)
+        if turn == WHITE:
+            if has_valid_move(board, size, turn):
+                get_move(board, size, turn)
+            else:
+                print ("No valid moves")
         else:
-            print ("No valid moves")
+            move = calculate(board, size, turn)
+            print "move: ", move
+            make_move(board, size, move[0], move[1], turn)
+            
         print_board(board, size)
         opponent, turn = turn, opponent
-
     print("Game Over!")
-
     white_score = score(board,size, WHITE)
     black_score = score(board,size, BLACK)
     print("White:", white_score)
@@ -186,6 +198,94 @@ def play_game(board, size, turn=WHITE):
     else:
         print("TIE")
 
+
+
+
+############## HEURISTICS ######################################
+
+def mobility(board, size, player):
+        opponent = BLACK if player == WHITE else WHITE
+        player_moves = len(get_legal_moves(board, size, player))
+        opponent_moves = len(get_legal_moves(board, size, opponent))
+        return 100 * (player_moves - opponent_moves)
+
+def corners_captured(board, size, player):
+    opponent = BLACK if player == WHITE else WHITE
+    player_corners = 0
+    opponent_corners = 0
+    for i, j in ((0,0), (0, size - 1), (size - 1, 0), (size - 1, size - 1)):
+        if board[i][j] == player:
+            player_corners += 1
+        elif board[i][j] == opponent:
+            opponent_corners += 1
+    return 100 * (player_corners - opponent_corners)
+    
+def heuristic(board, size, player):
+    mob = mobility(board, size, player)
+    cor = corners_captured(board, size, player)
+    # print "Mobility: ", mob
+    # print "Corner Score: ", cor
+    return mob + cor
+
+################################################################
+def max(a, b):
+    return a if a >= b else b
+
+def min(a, b):
+    return a if a <= b else b
+
+
+def result(board, size, move, player):
+    new_board = deepcopy(board)
+    make_move(new_board, size, move[0], move[1], player)
+    return new_board
+
+
+
+def calculate(board, size, player):
+    opponent = BLACK if player == WHITE else WHITE
+    value, final_move = alphabeta(board, size, player, opponent, 6, -100000000, 100000000, True)
+    return final_move
+
+
+def alphabeta(board, size, player, opponent, depth, alpha, beta, isMaximizing):
+    if depth == 0:
+        return heuristic(board, size, player), [-1000, -1000]
+        
+    if isMaximizing:
+        value = -10000000
+        final_move = None
+        movelist = get_legal_moves(board,size, player)
+        if len(movelist) < 1:
+            value = heuristic(board, size, player)
+        for move in movelist:
+            s1 = result(board, size, move, player)
+            new_value, new_move = alphabeta(s1, size, player, opponent, depth - 1, alpha, beta, False)
+            if value <= new_value:
+                value = new_value
+                final_move = move
+            alpha = max(alpha, value)
+            if alpha >= beta:
+                break
+        return value, final_move
+    else:
+        value = 10000000
+        final_move = None
+        movelist = get_legal_moves(board, size, opponent)
+        if len(movelist) < 1:
+            value = heuristic(board, size, player)
+        for move in movelist:
+            s1 = result(board, size, move, opponent)
+            new_value, new_move = alphabeta(s1, size, player, opponent, depth - 1, alpha, beta, True)
+            if value >= new_value:
+                value = new_value
+                final_move = move
+            beta = min(beta, value)
+            if alpha >= beta:
+                break
+        return value, final_move
+
+####################################################################
 if __name__ == '__main__':
     size = int(input("Enter Size: "))
     board = init_board(size)
@@ -193,4 +293,4 @@ if __name__ == '__main__':
     player = WHITE
     play_game(board, size, player)
     
-    
+####################################################################### 
