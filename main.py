@@ -1,11 +1,35 @@
 
 from copy import deepcopy
+import random 
 
 EMPTY = ' '
 BLACK = 'B'
 WHITE = 'W'
 
+max_closed_list={}
+min_closed_list={}
 
+def compressing(board):
+    ret = ''
+    for i in board:
+        ret += ''.join(i)
+    return ret
+
+board6 = [[100, -30, 2, 2, -30, 100], \
+          [-30, -40, -1, -1, -40, -30], \
+          [2, -1, 1, 1, -1, 2],\
+          [2, -1, 1, 1, -1, 2],\
+          [-30, -40, 2, 2, -40, -30], \
+          [100, -30, -1, -1, -30, 100]]
+
+board8 = [[100, -30, 2, 2, 2, 2, -30, 100], \
+        [-30, -40, -10, -10, -10, -10, -40, -30], \
+        [2, -10, 1, 0, 0, 1, -10, 2],\
+        [2, -10, 0, 1, 1, 0, -10, 2],\
+        [2, -10, 0, 1, 1, 0, -10, 2],\
+        [2, -10, 1, 0, 0, 1, -10, 2],\
+        [-30, -40, -10, -10, -10, -10, -40, -30], \
+        [100, -30, 2, 2, 2, 2, -30, 100]]
 ######################### INITIALIZATION OF BOARD ##################
 def init_board(size):
     mid = size/2
@@ -175,11 +199,16 @@ def play_game(board, size, turn=WHITE):
     opponent = BLACK if turn == WHITE else BLACK
     while not game_over(board,size, turn):
         if turn == WHITE:
+            print("WHITE's turn...")
             if has_valid_move(board, size, turn):
-                get_move(board, size, turn)
+                move = random_move(board, size, turn)
+                print "move: ", move
+                make_move(board, size, move[0], move[1], turn)
+                #get_move(board, size, turn)
             else:
                 print ("No valid moves")
         else:
+            print("BLACK's turn...")
             move = calculate(board, size, turn)
             print "move: ", move
             make_move(board, size, move[0], move[1], turn)
@@ -219,14 +248,42 @@ def corners_captured(board, size, player):
         elif board[i][j] == opponent:
             opponent_corners += 1
     return 100 * (player_corners - opponent_corners)
-    
+
+def get_move_weight(board, size, player):
+    opponent = BLACK if player == WHITE else WHITE
+    player_score = 0
+    opponent_score = 0
+    player_moves = get_legal_moves(board, size, player)
+    opponent_moves = get_legal_moves(board, size, opponent)
+    if size == 6:
+        for i, j in player_moves:
+            player_score += board6[i][j]
+        for i, j in opponent_moves:
+            opponent_score += board6[i][j]
+    elif size == 8:
+        for i, j in player_moves:
+            player_score += board8[i][j]
+        for i, j in opponent_moves:
+            opponent_score += board8[i][j]
+    else:
+        return 0
+    return player_score - opponent_score
+
 def heuristic(board, size, player):
     mob = mobility(board, size, player)
     cor = corners_captured(board, size, player)
+    weight = get_move_weight(board, size, player)
     # print "Mobility: ", mob
     # print "Corner Score: ", cor
-    return mob + cor
+    return mob + cor + weight
 
+def random_move(board, size, player):
+        moves = get_legal_moves(board,size,player)
+        if len(moves) == 0:
+            return (-1, -1)
+        else:
+            i = random.choice(moves)
+            return i
 ################################################################
 def max(a, b):
     return a if a >= b else b
@@ -245,6 +302,8 @@ def result(board, size, move, player):
 def calculate(board, size, player):
     opponent = BLACK if player == WHITE else WHITE
     value, final_move = alphabeta(board, size, player, opponent, 6, -100000000, 100000000, True)
+    max_closed_list.clear
+    min_closed_list.clear
     return final_move
 
 
@@ -260,13 +319,18 @@ def alphabeta(board, size, player, opponent, depth, alpha, beta, isMaximizing):
             value = heuristic(board, size, player)
         for move in movelist:
             s1 = result(board, size, move, player)
+            compressed = compressing(s1)
+            if compressed in max_closed_list:
+                return max_closed_list[compressed][0], max_closed_list[compressed][1] 
             new_value, new_move = alphabeta(s1, size, player, opponent, depth - 1, alpha, beta, False)
             if value <= new_value:
                 value = new_value
                 final_move = move
             alpha = max(alpha, value)
+            max_closed_list[compressed] = alpha, final_move
             if alpha >= beta:
                 break
+                
         return value, final_move
     else:
         value = 10000000
@@ -276,11 +340,16 @@ def alphabeta(board, size, player, opponent, depth, alpha, beta, isMaximizing):
             value = heuristic(board, size, player)
         for move in movelist:
             s1 = result(board, size, move, opponent)
+            compressed = compressing(s1)
+            if compressed in min_closed_list:
+                #print min_closed_list[compressed][0], min_closed_list[compressed][1]
+                return min_closed_list[compressed][0], min_closed_list[compressed][1] 
             new_value, new_move = alphabeta(s1, size, player, opponent, depth - 1, alpha, beta, True)
             if value >= new_value:
                 value = new_value
                 final_move = move
             beta = min(beta, value)
+            min_closed_list[compressed] = beta, final_move
             if alpha >= beta:
                 break
         return value, final_move
