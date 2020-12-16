@@ -34,12 +34,12 @@ board6 = [[100, -30, 2, 2, -30, 100], \
           [100, -30, 2, 2, -30, 100]]
 
 board8 = [[100, -30, 2, 2, 2, 2, -30, 100], \
-        [-30, -40, -10, -10, -10, -10, -40, -30], \
-        [2, -10, 1, 0, 0, 1, -10, 2],\
-        [2, -10, 0, 1, 1, 0, -10, 2],\
-        [2, -10, 0, 1, 1, 0, -10, 2],\
-        [2, -10, 1, 0, 0, 1, -10, 2],\
-        [-30, -40, -10, -10, -10, -10, -40, -30], \
+        [-30, -40, -30, -30, -30, -30, -40, -30], \
+        [2, -30, 1, 0, 0, 1, -30, 2],\
+        [2, -30, 0, 1, 1, 0, -30, 2],\
+        [2, -30, 0, 1, 1, 0, -30, 2],\
+        [2, -30, 1, 0, 0, 1, -30, 2],\
+        [-30, -40, -30, -30, -30, -30, -30, -30], \
         [100, -30, 2, 2, 2, 2, -30, 100]]
 ######################### INITIALIZATION OF BOARD ##################
 def init_board(size):
@@ -215,6 +215,7 @@ def play_game(board, size, turn=WHITE):
         else:
             print("BLACK's turn...")
             move = calculate(board, size, turn)
+            #move = get_move(size, board, turn, time_left, opponent_time_left)
             print "move: ", move
             make_move(board, size, move[0], move[1], turn)
             
@@ -417,6 +418,7 @@ def get_move(board_size, board_state, turn, time_left, opponent_time_left):
     else:
         return calculate(board_state, board_size, turn, 2)      
     return (-1,-1)
+
 
 ####################################################################
 if __name__ == '__main__':
