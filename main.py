@@ -38,12 +38,12 @@ board6 = [[100, -30, 2, 2, -30, 100], \
           [100, -30, -1, -1, -30, 100]]
 
 board8 = [[100, -30, 2, 2, 2, 2, -30, 100], \
-        [-30, -40, -10, -10, -10, -10, -40, -30], \
-        [2, -10, 1, 0, 0, 1, -10, 2],\
-        [2, -10, 0, 1, 1, 0, -10, 2],\
-        [2, -10, 0, 1, 1, 0, -10, 2],\
-        [2, -10, 1, 0, 0, 1, -10, 2],\
-        [-30, -40, -10, -10, -10, -10, -40, -30], \
+        [-30, -40, -30, -30, -30, -30, -40, -30], \
+        [2, -30, 1, 0, 0, 1, -30, 2],\
+        [2, -30, 0, 1, 1, 0, -30, 2],\
+        [2, -30, 0, 1, 1, 0, -30, 2],\
+        [2, -30, 1, 0, 0, 1, -30, 2],\
+        [-30, -40, -30, -30, -30, -30, -30, -30], \
         [100, -30, 2, 2, 2, 2, -30, 100]]
 ######################### INITIALIZATION OF BOARD ##################
 def init_board(size):
@@ -190,7 +190,7 @@ def game_over(board, size, player):
         return True
 
 #gets move from the player
-def get_move(board, size, player):
+def take_move(board, size, player):
     print player, "'s turn\n"
     row = input("Enter row: ")
     col = input("Enter column: ")
@@ -213,12 +213,13 @@ def play_game(board, size, turn=WHITE):
                 move = random_move(board, size, turn)
                 print "move: ", move
                 make_move(board, size, move[0], move[1], turn)
-                #get_move(board, size, turn)
+                #take_move(board, size, turn)
             else:
                 print ("No valid moves")
         else:
             print("BLACK's turn...")
             move = calculate(board, size, turn)
+            #move = get_move(size, board, turn, time_left, opponent_time_left)
             print "move: ", move
             make_move(board, size, move[0], move[1], turn)
             
@@ -297,7 +298,7 @@ def corners_captured(board, size, player):
             opponent_corners += 1
     return 100 * (player_corners - opponent_corners)
 
-def get_move_weight(board, size, player):
+def take_move_weight(board, size, player):
     opponent = BLACK if player == WHITE else WHITE
     player_score = 0
     opponent_score = 0
@@ -321,7 +322,7 @@ def get_move_weight(board, size, player):
 def heuristic(board, size, player):
     # mob = mobility(board, size, player)
     # cor = corners_captured(board, size, player)
-    # weight = get_move_weight(board, size, player)
+    # weight = take_move_weight(board, size, player)
     # # print "Mobility: ", mob
     # # print "Corner Score: ", cor
     # return mob + cor + weight
@@ -349,9 +350,9 @@ def result(board, size, move, player):
 
 
 
-def calculate(board, size, player):
+def calculate(board, size, player, depth):
     opponent = BLACK if player == WHITE else WHITE
-    value, final_move = alphabeta(board, size, player, opponent, 4, -100000000, 100000000, True, [-1, -1])
+    value, final_move = alphabeta(board, size, player, opponent, depth, -100000000, 100000000, True, [-1, -1])
     max_closed_list.clear
     min_closed_list.clear
     return final_move
@@ -407,6 +408,23 @@ def alphabeta(board, size, player, opponent, depth, alpha, beta, isMaximizing, c
             if alpha >= beta:
                 break
         return value, final_move
+
+
+####################################################################
+def get_move(board_size, board_state, turn, time_left, opponent_time_left):
+    if time_left > 140000:
+        return calculate(board_state, board_size, turn, 6)
+    elif time_left > 120000:
+        return calculate(board_state, board_size, turn, 4)
+    elif time_left > 80000:
+        return calculate(board_state, board_size, turn, 3)
+    else:
+        return calculate(board_state, board_size, turn, 2)      
+    return (-1,-1)
+
+
+
+####################################################################
 
 ####################################################################
 if __name__ == '__main__':
