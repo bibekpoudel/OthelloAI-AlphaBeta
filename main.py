@@ -1,5 +1,6 @@
 
 from copy import deepcopy
+from copy import copy
 import random 
 
 EMPTY = ' '
@@ -10,15 +11,10 @@ max_closed_list={}
 min_closed_list={}
 
 
-def create_clean_board(size):
-    board=[]
+def copy_board(board, size):
+    new_board = []
     for i in range(size):
-        board.append([EMPTY] * size)
-    return board
-
-def copy_board(board):
-    new_board = create_clean_board(len(board))
-    for i in range(len(board)):
+        new_board.append([EMPTY] * size)
         for j in range(len(board)):
             new_board[i][j] = board[i][j]
     return new_board
@@ -31,11 +27,11 @@ def compressing(board):
     return ret
 
 board6 = [[100, -30, 2, 2, -30, 100], \
-          [-30, -40, -1, -1, -40, -30], \
-          [2, -1, 1, 1, -1, 2],\
-          [2, -1, 1, 1, -1, 2],\
-          [-30, -40, 2, 2, -40, -30], \
-          [100, -30, -1, -1, -30, 100]]
+          [-30, -40, -10, -10, -40, -30], \
+          [2, -10, 1, 1, -10, 2],\
+          [2, -10, 1, 1, -10, 2],\
+          [-30, -40, -10, -10, -40, -30], \
+          [100, -30, 2, 2, -30, 100]]
 
 board8 = [[100, -30, 2, 2, 2, 2, -30, 100], \
         [-30, -40, -10, -10, -10, -10, -40, -30], \
@@ -102,7 +98,7 @@ def is_in_range(board, size, row, col): #check if is on board and is empty
 
 #checks if the pieces can be flipped and returns the flippable pieces
 def get_flippable(board, size, player, row, column):
-    brd = copy_board(board)
+    brd = copy_board(board, size)
     brd[row][column] = player
     opponent = BLACK if player == WHITE else WHITE
     toFlip = []
@@ -143,8 +139,8 @@ def flip(board, row, col, player, toBeFlipped):
 
 #makes move
 def make_move(board, size, row, column, player):
-    if is_onboard(size, row, column) == False or board[row][column] != EMPTY:
-        return False
+    # if is_onboard(size, row, column) == False or board[row][column] != EMPTY:
+    #     return False
     toBeFlipped = get_flippable(board, size, player, row, column)
     if toBeFlipped == False:
         return False
@@ -343,7 +339,7 @@ def min(a, b):
 
 
 def result(board, size, move, player):
-    new_board = copy_board(board)
+    new_board = copy_board(board, size)
     make_move(new_board, size, move[0], move[1], player)
     return new_board
 
@@ -351,7 +347,7 @@ def result(board, size, move, player):
 
 def calculate(board, size, player):
     opponent = BLACK if player == WHITE else WHITE
-    value, final_move = alphabeta(board, size, player, opponent, 4, -100000000, 100000000, True, [-1, -1])
+    value, final_move = alphabeta(board, size, player, opponent, 5, -100000000, 100000000, True, [-1, -1])
     max_closed_list.clear
     min_closed_list.clear
     return final_move
