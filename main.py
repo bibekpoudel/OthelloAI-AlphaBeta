@@ -226,7 +226,8 @@ def play_game(board, size, turn=WHITE):
                 print ("No valid moves")
         else:
             print("BLACK's turn...")
-            move = calculate(board, size, turn)
+            depth = 6
+            move = calculate(board, size, turn, depth)
             #move = get_move(size, board, turn, time_left, opponent_time_left)
             print "move: ", move
             make_move(board, size, move[0], move[1], turn)
