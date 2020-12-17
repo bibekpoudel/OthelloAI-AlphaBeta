@@ -41,6 +41,18 @@ board8 = [[100, -30, 2, 2, 2, 2, -30, 100], \
         [2, -30, 1, 0, 0, 1, -30, 2],\
         [-30, -40, -30, -30, -30, -30, -30, -30], \
         [100, -30, 2, 2, 2, 2, -30, 100]]
+
+board10 = [[100, -30, 2, 2, 2, 2, 2, 2, -30, 100], \
+        [-30, -40, -30, -30, -30, -30,-30, -30, -40, -30], \
+        [2, -30, 1, 1, 0, 0, 1, 1, -30, 2],\
+        [2, -30, 0, 0, 1, 1, 0, 0, -30, 2],\
+        [2, -30, 0, 0, 1, 1, 0, 0, -30, 2],\
+        [2, -30, 1, 1,  0, 0, 1, 1, -30, 2],\
+        [2, -30, 0, 0, 1, 1, 0, 0, -30, 2],\
+        [2, -30, 1, 1,  0, 0, 1, 1, -30, 2],\
+        [-30, -40, -30, -30, -30, -30, -30, -30, -40, -30], \
+        [100, -30, 2, 2, 2, 2, 2, 2, -30, 100]]
+
 ######################### INITIALIZATION OF BOARD ##################
 def init_board(size):
     mid = size/2
@@ -292,7 +304,7 @@ def corners_captured(board, size, player):
             player_corners += 1
         elif board[i][j] == opponent:
             opponent_corners += 1
-    return 100 * (player_corners - opponent_corners)
+    return 200 * (player_corners - opponent_corners)
 
 def take_move_weight(board, size, player):
     opponent = BLACK if player == WHITE else WHITE
@@ -311,6 +323,11 @@ def take_move_weight(board, size, player):
             player_score += board8[i][j]
         for i, j in opponent_moves:
             opponent_score += board8[i][j]
+    elif size == 10:
+        for i, j in player_moves:
+            player_score += board10[i][j]
+        for i, j in opponent_moves:
+            opponent_score += board10[i][j]
     else:
         return 0
     return player_score - opponent_score
