@@ -257,7 +257,7 @@ def get_parity(board, player, opponent):
     for i in board:
         player_count = i.count(player)
         opponent_count = i.count(opponent)
-    return 1000 * (player_count - opponent_count)
+    return 100 * (player_count - opponent_count)
 
 def mcw(board, size, player):
     opponent = BLACK if player == WHITE else WHITE
@@ -305,7 +305,7 @@ def corners_captured(board, size, player):
             player_corners += 1
         elif board[i][j] == opponent:
             opponent_corners += 1
-    return 200 * (player_corners - opponent_corners)
+    return 100 * (player_corners - opponent_corners)
 
 def take_move_weight(board, size, player):
     opponent = BLACK if player == WHITE else WHITE
